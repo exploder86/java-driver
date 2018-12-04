@@ -17,6 +17,8 @@ package com.datastax.oss.driver.internal.core.loadbalancing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.filter;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.atLeast;
 
 import ch.qos.logback.classic.Level;
@@ -66,6 +68,25 @@ public class DefaultLoadBalancingPolicyInitTest extends DefaultLoadBalancingPoli
   }
 
   @Test
+  public void should_use_local_dc_from_builder_if_not_in_config() {
+    // Given
+    Mockito.when(context.getLocalDatacenterFromBuilder()).thenReturn("dc1");
+    Mockito.when(
+            defaultProfile.getString(
+                eq(DefaultDriverOption.LOAD_BALANCING_LOCAL_DATACENTER), nullable(String.class)))
+        // simulate config not set by returning second argument (i.e. default value)
+        .thenAnswer(invocation -> invocation.getArgument(1));
+    DefaultLoadBalancingPolicy policy =
+        new DefaultLoadBalancingPolicy(context, DriverExecutionProfile.DEFAULT_NAME);
+
+    // When
+    policy.init(ImmutableMap.of(ADDRESS2, node2), distanceReporter, ImmutableSet.of(ADDRESS2));
+
+    // Then init succeeds (would fail with "you provided explicit contact points" if builder DC was
+    // not taken into account)
+  }
+
+  @Test
   public void should_warn_if_contact_points_not_in_local_dc() {
     // Given
     Mockito.when(node2.getDatacenter()).thenReturn("dc2");
@@ -89,6 +110,31 @@ public class DefaultLoadBalancingPolicyInitTest extends DefaultLoadBalancingPoli
             "You specified dc1 as the local DC, but some contact points are from a different DC")
         .contains("/127.0.0.2:9042=dc2")
         .contains("/127.0.0.3:9042=dc3");
+  }
+
+  @Test
+  public void should_ignore_local_dc_from_builder_if_in_config() {
+    // Given
+    // reminder: config says dc1 (see parent class)
+    Mockito.when(context.getLocalDatacenterFromBuilder()).thenReturn("dc2");
+    DefaultLoadBalancingPolicy policy =
+        new DefaultLoadBalancingPolicy(context, DriverExecutionProfile.DEFAULT_NAME);
+
+    // When
+    policy.init(ImmutableMap.of(ADDRESS2, node2), distanceReporter, ImmutableSet.of(ADDRESS2));
+
+    // Then no WARN logs (if "dc2" was taken into account, we would get "some contact points are
+    // from a different DC")
+    Mockito.verify(
+            appender,
+            // this is a bit crappy but we need a verify call to capture the logs, can't use never()
+            // because the policy could log at other levels (and actually it does at DEBUG, so
+            // atLeast(1) would work but I don't want to depend on the presence of DEBUG logs).
+            atLeast(0))
+        .doAppend(loggingEventCaptor.capture());
+    Iterable<ILoggingEvent> warnLogs =
+        filter(loggingEventCaptor.getAllValues()).with("level", Level.WARN).get();
+    assertThat(warnLogs).hasSize(0);
   }
 
   @Test

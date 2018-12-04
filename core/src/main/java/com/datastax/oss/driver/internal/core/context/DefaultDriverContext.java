@@ -186,6 +186,7 @@ public class DefaultDriverContext implements InternalDriverContext {
 
   private final DriverConfig config;
   private final DriverConfigLoader configLoader;
+  private final String localDatacenterFromBuilder;
   private final ChannelPoolFactory channelPoolFactory = new ChannelPoolFactory();
   private final CodecRegistry codecRegistry;
   private final String sessionName;
@@ -197,6 +198,7 @@ public class DefaultDriverContext implements InternalDriverContext {
 
   public DefaultDriverContext(
       DriverConfigLoader configLoader,
+      String localDatacenter,
       List<TypeCodec<?>> typeCodecs,
       NodeStateListener nodeStateListener,
       SchemaChangeListener schemaChangeListener,
@@ -211,6 +213,7 @@ public class DefaultDriverContext implements InternalDriverContext {
     } else {
       this.sessionName = "s" + SESSION_NAME_COUNTER.getAndIncrement();
     }
+    this.localDatacenterFromBuilder = localDatacenter;
     this.codecRegistry = buildCodecRegistry(this.sessionName, typeCodecs);
     this.nodeStateListenerFromBuilder = nodeStateListener;
     this.nodeStateListenerRef =
@@ -513,6 +516,12 @@ public class DefaultDriverContext implements InternalDriverContext {
   @Override
   public DriverConfigLoader getConfigLoader() {
     return configLoader;
+  }
+
+  @Nullable
+  @Override
+  public String getLocalDatacenterFromBuilder() {
+    return localDatacenterFromBuilder;
   }
 
   @NonNull

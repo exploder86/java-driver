@@ -137,4 +137,8 @@ public interface InternalDriverContext extends DriverContext {
    */
   @NonNull
   Map<String, String> getStartupOptions();
+
+  /** The value that was passed to {@link SessionBuilder#withLocalDatacenter(String)}. */
+  @Nullable
+  String getLocalDatacenterFromBuilder();
 }

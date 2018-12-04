@@ -63,6 +63,7 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
   protected final SelfT self = (SelfT) this;
 
   protected DriverConfigLoader configLoader;
+  private String localDatacenter;
   protected Set<InetSocketAddress> programmaticContactPoints = new HashSet<>();
   protected List<TypeCodec<?>> typeCodecs = new ArrayList<>();
   private NodeStateListener nodeStateListener;
@@ -142,6 +143,24 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
   @NonNull
   public SelfT addContactPoint(@NonNull InetSocketAddress contactPoint) {
     this.programmaticContactPoints.add(contactPoint);
+    return self;
+  }
+
+  /**
+   * Specifies the datacenter that is considered "local" by the load balancing policy.
+   *
+   * <p>This is a programmatic alternative to the configuration option {@code
+   * basic.load-balancing-policy.local-datacenter}. If you pass a non-null value to this method,
+   * then any execution profile that does not declare it (or inherit it from the default profile)
+   * will use it. If the configuration option is specified, then it takes precedence and this value
+   * is ignored.
+   *
+   * <p>Note that this setting may or may not be relevant depending on the load balancing policy
+   * implementation in use. The driver's built-in {@code DefaultLoadBalancingPolicy} relies on it;
+   * if you use a third-party implementation, refer to their documentation.
+   */
+  public SelfT withLocalDatacenter(@Nullable String localDatacenter) {
+    this.localDatacenter = localDatacenter;
     return self;
   }
 
@@ -309,6 +328,7 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
           (InternalDriverContext)
               buildContext(
                   configLoader,
+                  localDatacenter,
                   typeCodecs,
                   nodeStateListener,
                   schemaChangeListener,
@@ -331,6 +351,7 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
    */
   protected DriverContext buildContext(
       DriverConfigLoader configLoader,
+      String localDatacenter,
       List<TypeCodec<?>> typeCodecs,
       NodeStateListener nodeStateListener,
       SchemaChangeListener schemaChangeListener,
@@ -339,6 +360,7 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
       ClassLoader classLoader) {
     return new DefaultDriverContext(
         configLoader,
+        localDatacenter,
         typeCodecs,
         nodeStateListener,
         schemaChangeListener,

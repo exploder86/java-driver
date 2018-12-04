@@ -66,6 +66,7 @@ public class StartupOptionsBuilderTest {
     defaultDriverContext =
         new DefaultDriverContext(
             configLoader,
+            null,
             typeCodecs,
             nodeStateListener,
             schemaChangeListener,

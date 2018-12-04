@@ -36,6 +36,7 @@ public class GuavaSessionBuilder extends SessionBuilder<GuavaSessionBuilder, Gua
   @Override
   protected DriverContext buildContext(
       DriverConfigLoader configLoader,
+      String localDatacenter,
       List<TypeCodec<?>> typeCodecs,
       NodeStateListener nodeStateListener,
       SchemaChangeListener schemaChangeListener,
@@ -44,6 +45,7 @@ public class GuavaSessionBuilder extends SessionBuilder<GuavaSessionBuilder, Gua
       ClassLoader classLoader) {
     return new GuavaDriverContext(
         configLoader,
+        localDatacenter,
         typeCodecs,
         nodeStateListener,
         schemaChangeListener,

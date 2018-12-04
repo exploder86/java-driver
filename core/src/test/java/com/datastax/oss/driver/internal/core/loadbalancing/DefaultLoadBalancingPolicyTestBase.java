@@ -84,6 +84,8 @@ public abstract class DefaultLoadBalancingPolicyTestBase {
     for (Node node : ImmutableList.of(node1, node2, node3, node4, node5)) {
       Mockito.when(node.getDatacenter()).thenReturn("dc1");
     }
+
+    Mockito.when(context.getLocalDatacenterFromBuilder()).thenReturn(null);
   }
 
   @After

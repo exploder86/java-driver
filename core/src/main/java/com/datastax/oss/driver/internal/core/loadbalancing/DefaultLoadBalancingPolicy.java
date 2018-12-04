@@ -91,9 +91,11 @@ public class DefaultLoadBalancingPolicy implements LoadBalancingPolicy {
     this.logPrefix = context.getSessionName() + "|" + profileName;
     DriverExecutionProfile config = context.getConfig().getProfile(profileName);
     String localDcFromConfig =
-        config.getString(DefaultDriverOption.LOAD_BALANCING_LOCAL_DATACENTER, null);
+        config.getString(
+            DefaultDriverOption.LOAD_BALANCING_LOCAL_DATACENTER,
+            internalContext.getLocalDatacenterFromBuilder());
     if (localDcFromConfig != null) {
-      LOG.debug("[{}] Local DC set from configuration: {}", logPrefix, localDcFromConfig);
+      LOG.debug("[{}] Local DC set from configuration/builder: {}", logPrefix, localDcFromConfig);
       this.localDc = localDcFromConfig;
     }
     this.isDefaultPolicy = profileName.equals(DriverExecutionProfile.DEFAULT_NAME);
