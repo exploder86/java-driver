@@ -15,9 +15,6 @@
  */
 package com.datastax.oss.driver.internal.core.loadbalancing;
 
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.nullable;
-
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
@@ -74,8 +71,7 @@ public abstract class DefaultLoadBalancingPolicyTestBase {
     Mockito.when(config.getProfile(DriverExecutionProfile.DEFAULT_NAME)).thenReturn(defaultProfile);
 
     Mockito.when(
-            defaultProfile.getString(
-                eq(DefaultDriverOption.LOAD_BALANCING_LOCAL_DATACENTER), nullable(String.class)))
+            defaultProfile.getString(DefaultDriverOption.LOAD_BALANCING_LOCAL_DATACENTER, null))
         .thenReturn("dc1");
 
     logger = (Logger) LoggerFactory.getLogger(DefaultLoadBalancingPolicy.class);
@@ -85,7 +81,7 @@ public abstract class DefaultLoadBalancingPolicyTestBase {
       Mockito.when(node.getDatacenter()).thenReturn("dc1");
     }
 
-    Mockito.when(context.getLocalDatacenterFromBuilder()).thenReturn(null);
+    Mockito.when(context.getLocalDatacenter(Mockito.anyString())).thenReturn(null);
   }
 
   @After

@@ -186,23 +186,23 @@ public class DefaultDriverContext implements InternalDriverContext {
 
   private final DriverConfig config;
   private final DriverConfigLoader configLoader;
-  private final String localDatacenterFromBuilder;
   private final ChannelPoolFactory channelPoolFactory = new ChannelPoolFactory();
   private final CodecRegistry codecRegistry;
   private final String sessionName;
   private final NodeStateListener nodeStateListenerFromBuilder;
   private final SchemaChangeListener schemaChangeListenerFromBuilder;
   private final RequestTracker requestTrackerFromBuilder;
+  private final Map<String, String> localDatacentersFromBuilder;
   private final Map<String, Predicate<Node>> nodeFiltersFromBuilder;
   private final ClassLoader classLoader;
 
   public DefaultDriverContext(
       DriverConfigLoader configLoader,
-      String localDatacenter,
       List<TypeCodec<?>> typeCodecs,
       NodeStateListener nodeStateListener,
       SchemaChangeListener schemaChangeListener,
       RequestTracker requestTracker,
+      Map<String, String> localDatacenters,
       Map<String, Predicate<Node>> nodeFilters,
       ClassLoader classLoader) {
     this.config = configLoader.getInitialConfig();
@@ -213,7 +213,7 @@ public class DefaultDriverContext implements InternalDriverContext {
     } else {
       this.sessionName = "s" + SESSION_NAME_COUNTER.getAndIncrement();
     }
-    this.localDatacenterFromBuilder = localDatacenter;
+    this.localDatacentersFromBuilder = localDatacenters;
     this.codecRegistry = buildCodecRegistry(this.sessionName, typeCodecs);
     this.nodeStateListenerFromBuilder = nodeStateListener;
     this.nodeStateListenerRef =
@@ -518,12 +518,6 @@ public class DefaultDriverContext implements InternalDriverContext {
     return configLoader;
   }
 
-  @Nullable
-  @Override
-  public String getLocalDatacenterFromBuilder() {
-    return localDatacenterFromBuilder;
-  }
-
   @NonNull
   @Override
   public Map<String, LoadBalancingPolicy> getLoadBalancingPolicies() {
@@ -726,6 +720,12 @@ public class DefaultDriverContext implements InternalDriverContext {
   @Override
   public RequestTracker getRequestTracker() {
     return requestTrackerRef.get();
+  }
+
+  @Nullable
+  @Override
+  public String getLocalDatacenter(String profileName) {
+    return localDatacentersFromBuilder.get(profileName);
   }
 
   @Nullable

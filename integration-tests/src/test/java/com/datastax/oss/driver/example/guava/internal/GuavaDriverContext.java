@@ -46,20 +46,20 @@ public class GuavaDriverContext extends DefaultDriverContext {
 
   public GuavaDriverContext(
       DriverConfigLoader configLoader,
-      String localDatacenter,
       List<TypeCodec<?>> typeCodecs,
       NodeStateListener nodeStateListener,
       SchemaChangeListener schemaChangeListener,
       RequestTracker requestTracker,
+      Map<String, String> localDatacenters,
       Map<String, Predicate<Node>> nodeFilters,
       ClassLoader classLoader) {
     super(
         configLoader,
-        localDatacenter,
         typeCodecs,
         nodeStateListener,
         schemaChangeListener,
         requestTracker,
+        localDatacenters,
         nodeFilters,
         classLoader);
   }

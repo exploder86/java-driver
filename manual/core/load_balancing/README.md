@@ -113,7 +113,7 @@ CqlSession session = CqlSession.builder()
     .build();
 ```
 
-If both are provided, the value in the configuration takes precedence.
+If both are provided, the programmatic value takes precedence.
 
 #### Token-aware
 

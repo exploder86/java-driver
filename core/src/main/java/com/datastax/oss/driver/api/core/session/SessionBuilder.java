@@ -63,12 +63,12 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
   protected final SelfT self = (SelfT) this;
 
   protected DriverConfigLoader configLoader;
-  private String localDatacenter;
   protected Set<InetSocketAddress> programmaticContactPoints = new HashSet<>();
   protected List<TypeCodec<?>> typeCodecs = new ArrayList<>();
   private NodeStateListener nodeStateListener;
   private SchemaChangeListener schemaChangeListener;
   protected RequestTracker requestTracker;
+  private ImmutableMap.Builder<String, String> localDatacenters = ImmutableMap.builder();
   private ImmutableMap.Builder<String, Predicate<Node>> nodeFilters = ImmutableMap.builder();
   protected CqlIdentifier keyspace;
   private ClassLoader classLoader = null;
@@ -147,24 +147,6 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
   }
 
   /**
-   * Specifies the datacenter that is considered "local" by the load balancing policy.
-   *
-   * <p>This is a programmatic alternative to the configuration option {@code
-   * basic.load-balancing-policy.local-datacenter}. If you pass a non-null value to this method,
-   * then any execution profile that does not declare it (or inherit it from the default profile)
-   * will use it. If the configuration option is specified, then it takes precedence and this value
-   * is ignored.
-   *
-   * <p>Note that this setting may or may not be relevant depending on the load balancing policy
-   * implementation in use. The driver's built-in {@code DefaultLoadBalancingPolicy} relies on it;
-   * if you use a third-party implementation, refer to their documentation.
-   */
-  public SelfT withLocalDatacenter(@Nullable String localDatacenter) {
-    this.localDatacenter = localDatacenter;
-    return self;
-  }
-
-  /**
    * Registers additional codecs for custom type mappings.
    *
    * @param typeCodecs neither the individual codecs, nor the vararg array itself, can be {@code
@@ -211,6 +193,27 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
   public SelfT withRequestTracker(@Nullable RequestTracker requestTracker) {
     this.requestTracker = requestTracker;
     return self;
+  }
+
+  /**
+   * Specifies the datacenter that is considered "local" by the load balancing policy.
+   *
+   * <p>This is a programmatic alternative to the configuration option {@code
+   * basic.load-balancing-policy.local-datacenter}. If this method is used, it takes precedence and
+   * overrides the configuration.
+   *
+   * <p>Note that this setting may or may not be relevant depending on the load balancing policy
+   * implementation in use. The driver's built-in {@code DefaultLoadBalancingPolicy} relies on it;
+   * if you use a third-party implementation, refer to their documentation.
+   */
+  public SelfT withLocalDatacenter(@NonNull String profileName, @NonNull String localDatacenter) {
+    this.localDatacenters.put(profileName, localDatacenter);
+    return self;
+  }
+
+  /** Alias to {@link #withLocalDatacenter(String, String)} for the default profile. */
+  public SelfT withLocalDatacenter(@NonNull String localDatacenter) {
+    return withLocalDatacenter(DriverExecutionProfile.DEFAULT_NAME, localDatacenter);
   }
 
   /**
@@ -328,11 +331,11 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
           (InternalDriverContext)
               buildContext(
                   configLoader,
-                  localDatacenter,
                   typeCodecs,
                   nodeStateListener,
                   schemaChangeListener,
                   requestTracker,
+                  localDatacenters.build(),
                   nodeFilters.build(),
                   classLoader),
           contactPoints,
@@ -351,20 +354,20 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
    */
   protected DriverContext buildContext(
       DriverConfigLoader configLoader,
-      String localDatacenter,
       List<TypeCodec<?>> typeCodecs,
       NodeStateListener nodeStateListener,
       SchemaChangeListener schemaChangeListener,
       RequestTracker requestTracker,
+      Map<String, String> localDatacenters,
       Map<String, Predicate<Node>> nodeFilters,
       ClassLoader classLoader) {
     return new DefaultDriverContext(
         configLoader,
-        localDatacenter,
         typeCodecs,
         nodeStateListener,
         schemaChangeListener,
         requestTracker,
+        localDatacenters,
         nodeFilters,
         classLoader);
   }
