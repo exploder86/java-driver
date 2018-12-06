@@ -35,7 +35,7 @@ public class CqlPrepareAsyncProcessor
     implements RequestProcessor<PrepareRequest, CompletionStage<PreparedStatement>> {
 
   private final Cache<PrepareRequest, CompletableFuture<PreparedStatement>> cache =
-      CacheBuilder.newBuilder().build();
+      CacheBuilder.newBuilder().weakValues().build();
 
   @Override
   public boolean canProcess(Request request, GenericType<?> resultType) {
