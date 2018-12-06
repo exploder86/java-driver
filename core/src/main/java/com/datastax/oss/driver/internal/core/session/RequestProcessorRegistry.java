@@ -21,10 +21,6 @@ import com.datastax.oss.driver.internal.core.cql.CqlPrepareAsyncProcessor;
 import com.datastax.oss.driver.internal.core.cql.CqlPrepareSyncProcessor;
 import com.datastax.oss.driver.internal.core.cql.CqlRequestAsyncProcessor;
 import com.datastax.oss.driver.internal.core.cql.CqlRequestSyncProcessor;
-import com.datastax.oss.driver.internal.core.cql.DefaultPreparedStatement;
-import com.datastax.oss.driver.shaded.guava.common.collect.MapMaker;
-import java.nio.ByteBuffer;
-import java.util.concurrent.ConcurrentMap;
 import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,15 +31,13 @@ public class RequestProcessorRegistry {
   private static final Logger LOG = LoggerFactory.getLogger(RequestProcessorRegistry.class);
 
   public static RequestProcessorRegistry defaultCqlProcessors(String logPrefix) {
-    ConcurrentMap<ByteBuffer, DefaultPreparedStatement> preparedStatementsCache =
-        new MapMaker().weakValues().makeMap();
-
+    CqlPrepareAsyncProcessor prepareAsyncProcessor = new CqlPrepareAsyncProcessor();
     return new RequestProcessorRegistry(
         logPrefix,
         new CqlRequestSyncProcessor(),
         new CqlRequestAsyncProcessor(),
-        new CqlPrepareSyncProcessor(preparedStatementsCache),
-        new CqlPrepareAsyncProcessor(preparedStatementsCache));
+        new CqlPrepareSyncProcessor(prepareAsyncProcessor),
+        prepareAsyncProcessor);
   }
 
   private final String logPrefix;

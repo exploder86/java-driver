@@ -357,4 +357,40 @@ public class PreparedStatementIT {
     assertThat(ps.getResultSetDefinitions()).hasSize(0);
     assertThat(Bytes.toHexString(ps.getResultMetadataId())).isEqualTo(Bytes.toHexString(idBefore));
   }
+
+  @Test
+  public void should_return_same_instance_when_repreparing_query() {
+    // Given
+    CqlSession session = sessionRule.session();
+    String query = "SELECT * FROM prepared_statement_test WHERE a = ?";
+
+    // When
+    PreparedStatement preparedStatement1 = session.prepare(query);
+    PreparedStatement preparedStatement2 = session.prepare(query);
+
+    // Then
+    assertThat(preparedStatement1).isSameAs(preparedStatement2);
+  }
+
+  @Test
+  public void should_create_separate_instances_for_different_statement_parameters() {
+    // Given
+    CqlSession session = sessionRule.session();
+    SimpleStatement statement =
+        SimpleStatement.newInstance("SELECT * FROM prepared_statement_test");
+
+    // When
+    PreparedStatement preparedStatement1 = session.prepare(statement.setPageSize(1));
+    PreparedStatement preparedStatement2 = session.prepare(statement.setPageSize(4));
+
+    // Then
+    assertThat(preparedStatement1).isNotSameAs(preparedStatement2);
+    // Each bound statement uses the page size it was prepared with
+    assertThat(firstPageOf(session.executeAsync(preparedStatement1.bind()))).hasSize(1);
+    assertThat(firstPageOf(session.executeAsync(preparedStatement2.bind()))).hasSize(4);
+  }
+
+  private static Iterable<Row> firstPageOf(CompletionStage<? extends AsyncResultSet> stage) {
+    return CompletableFutures.getUninterruptibly(stage).currentPage();
+  }
 }

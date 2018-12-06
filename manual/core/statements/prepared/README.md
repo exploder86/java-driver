@@ -55,9 +55,13 @@ client                            driver                Cassandra
   |<--------------------------------|                     |
 ```
 
-You should prepare only once, and cache the `PreparedStatement` in your application (it is
-thread-safe). If you call `prepare` multiple times with the same query string, the driver will log a
-warning.
+The driver caches prepared statements: if you call `prepare()` multiple times with the same query
+string (or a `SimpleStatement` with the same execution characteristics), you will get the same
+`PreparedStatement` instance. We still recommend keeping a reference to it (for example by caching
+it as a field in a DAO); if that's not possible (e.g. if query strings are generated dynamically),
+it's OK to call `prepare()` every time: there will just be a small performance overhead to check the
+internal cache. Note that caching is based on the query string exactly as you provided it: the
+driver does not perform any kind of trimming or sanitizing.
 
 If you execute a query only once, a prepared statement is inefficient because it requires two round
 trips. Consider a [simple statement](../simple/) instead.
