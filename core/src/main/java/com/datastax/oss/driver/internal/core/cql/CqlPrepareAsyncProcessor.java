@@ -21,7 +21,6 @@ import com.datastax.oss.driver.api.core.session.Request;
 import com.datastax.oss.driver.api.core.type.reflect.GenericType;
 import com.datastax.oss.driver.internal.core.context.InternalDriverContext;
 import com.datastax.oss.driver.internal.core.session.DefaultSession;
-import com.datastax.oss.driver.internal.core.session.RequestHandler;
 import com.datastax.oss.driver.internal.core.session.RequestProcessor;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletionStage;
@@ -45,12 +44,13 @@ public class CqlPrepareAsyncProcessor
   }
 
   @Override
-  public RequestHandler<PrepareRequest, CompletionStage<PreparedStatement>> newHandler(
+  public CompletionStage<PreparedStatement> process(
       PrepareRequest request,
       DefaultSession session,
       InternalDriverContext context,
       String sessionLogPrefix) {
     return new CqlPrepareAsyncHandler(
-        request, preparedStatementsCache, session, context, sessionLogPrefix);
+            request, preparedStatementsCache, session, context, sessionLogPrefix)
+        .handle();
   }
 }

@@ -201,8 +201,7 @@ public class DefaultSession implements CqlSession {
       @NonNull RequestT request, @NonNull GenericType<ResultT> resultType) {
     return processorRegistry
         .processorFor(request, resultType)
-        .newHandler(request, this, context, logPrefix)
-        .handle();
+        .process(request, this, context, logPrefix);
   }
 
   @Nullable
