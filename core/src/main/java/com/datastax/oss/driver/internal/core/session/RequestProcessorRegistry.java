@@ -21,6 +21,7 @@ import com.datastax.oss.driver.internal.core.cql.CqlPrepareAsyncProcessor;
 import com.datastax.oss.driver.internal.core.cql.CqlPrepareSyncProcessor;
 import com.datastax.oss.driver.internal.core.cql.CqlRequestAsyncProcessor;
 import com.datastax.oss.driver.internal.core.cql.CqlRequestSyncProcessor;
+import com.datastax.oss.driver.shaded.guava.common.collect.ImmutableList;
 import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,5 +72,10 @@ public class RequestProcessorRegistry {
       }
     }
     throw new IllegalArgumentException("No request processor found for " + request);
+  }
+
+  /** This creates a defensive copy on every call, do not overuse. */
+  public Iterable<RequestProcessor<?, ?>> getProcessors() {
+    return ImmutableList.copyOf(processors);
   }
 }

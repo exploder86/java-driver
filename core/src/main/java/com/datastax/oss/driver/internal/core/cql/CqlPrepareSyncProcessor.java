@@ -24,6 +24,8 @@ import com.datastax.oss.driver.internal.core.session.DefaultSession;
 import com.datastax.oss.driver.internal.core.session.RequestProcessor;
 import com.datastax.oss.driver.internal.core.util.concurrent.BlockingOperation;
 import com.datastax.oss.driver.internal.core.util.concurrent.CompletableFutures;
+import com.datastax.oss.driver.shaded.guava.common.cache.Cache;
+import java.util.concurrent.CompletableFuture;
 import net.jcip.annotations.ThreadSafe;
 
 @ThreadSafe
@@ -51,5 +53,9 @@ public class CqlPrepareSyncProcessor
     BlockingOperation.checkNotDriverThread();
     return CompletableFutures.getUninterruptibly(
         asyncProcessor.process(request, session, context, sessionLogPrefix));
+  }
+
+  public Cache<PrepareRequest, CompletableFuture<PreparedStatement>> getCache() {
+    return asyncProcessor.getCache();
   }
 }

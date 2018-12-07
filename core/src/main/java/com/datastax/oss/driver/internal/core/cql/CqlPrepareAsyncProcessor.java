@@ -57,4 +57,8 @@ public class CqlPrepareAsyncProcessor
       return CompletableFutures.failedFuture(e.getCause());
     }
   }
+
+  public Cache<PrepareRequest, CompletableFuture<PreparedStatement>> getCache() {
+    return cache;
+  }
 }

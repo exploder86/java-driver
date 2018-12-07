@@ -63,6 +63,11 @@ it's OK to call `prepare()` every time: there will just be a small performance o
 internal cache. Note that caching is based on the query string exactly as you provided it: the
 driver does not perform any kind of trimming or sanitizing.
 
+The size of the cache is exposed as a session-level [metric](../../metrics/)
+`cql-prepared-cache-size`. The cache uses [weak values]([guava eviction]) eviction, so this
+represents the number of `PreparedStatement` instances that your application has created, and is
+still holding a reference to.
+
 If you execute a query only once, a prepared statement is inefficient because it requires two round
 trips. Consider a [simple statement](../simple/) instead.
 
@@ -272,3 +277,4 @@ observe the new columns in the result set.
 [BoundStatement]:  http://docs.datastax.com/en/drivers/java/4.0/com/datastax/oss/driver/api/core/cql/BoundStatement.html
 
 [CASSANDRA-10786]: https://issues.apache.org/jira/browse/CASSANDRA-10786
+[guava eviction]: https://github.com/google/guava/wiki/CachesExplained#reference-based-eviction
