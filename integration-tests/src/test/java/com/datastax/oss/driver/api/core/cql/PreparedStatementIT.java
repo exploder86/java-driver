@@ -372,6 +372,22 @@ public class PreparedStatementIT {
     assertThat(preparedStatement1).isSameAs(preparedStatement2);
   }
 
+  /** Just to illustrate that the driver does not sanitize query strings. */
+  @Test
+  public void should_create_separate_instances_for_differently_formatted_queries() {
+    // Given
+    CqlSession session = sessionRule.session();
+
+    // When
+    PreparedStatement preparedStatement1 =
+        session.prepare("SELECT * FROM prepared_statement_test WHERE a = ?");
+    PreparedStatement preparedStatement2 =
+        session.prepare("select * from prepared_statement_test where a = ?");
+
+    // Then
+    assertThat(preparedStatement1).isNotSameAs(preparedStatement2);
+  }
+
   @Test
   public void should_create_separate_instances_for_different_statement_parameters() {
     // Given
