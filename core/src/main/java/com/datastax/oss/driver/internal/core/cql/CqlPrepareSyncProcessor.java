@@ -34,6 +34,11 @@ public class CqlPrepareSyncProcessor
 
   private final CqlPrepareAsyncProcessor asyncProcessor;
 
+  /**
+   * Note: if you also register a {@link CqlPrepareAsyncProcessor} with your session, make sure that
+   * you pass that same instance to this constructor. This is necessary for proper behavior of the
+   * prepared statement cache.
+   */
   public CqlPrepareSyncProcessor(CqlPrepareAsyncProcessor asyncProcessor) {
     this.asyncProcessor = asyncProcessor;
   }
