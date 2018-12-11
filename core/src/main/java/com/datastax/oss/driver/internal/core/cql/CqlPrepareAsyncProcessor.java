@@ -34,8 +34,16 @@ import net.jcip.annotations.ThreadSafe;
 public class CqlPrepareAsyncProcessor
     implements RequestProcessor<PrepareRequest, CompletionStage<PreparedStatement>> {
 
-  private final Cache<PrepareRequest, CompletableFuture<PreparedStatement>> cache =
-      CacheBuilder.newBuilder().weakValues().build();
+  protected final Cache<PrepareRequest, CompletableFuture<PreparedStatement>> cache;
+
+  public CqlPrepareAsyncProcessor() {
+    this(CacheBuilder.newBuilder().weakValues().build());
+  }
+
+  protected CqlPrepareAsyncProcessor(
+      Cache<PrepareRequest, CompletableFuture<PreparedStatement>> cache) {
+    this.cache = cache;
+  }
 
   @Override
   public boolean canProcess(Request request, GenericType<?> resultType) {
