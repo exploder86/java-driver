@@ -120,7 +120,7 @@ public interface InternalDriverContext extends DriverContext {
    * return {@code null}.
    */
   @Nullable
-  String getLocalDatacenter(String profileName);
+  String getLocalDatacenter(@NonNull String profileName);
 
   /**
    * This is the filter from {@link SessionBuilder#withNodeFilter(String, Predicate)}. If the filter

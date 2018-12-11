@@ -724,7 +724,7 @@ public class DefaultDriverContext implements InternalDriverContext {
 
   @Nullable
   @Override
-  public String getLocalDatacenter(String profileName) {
+  public String getLocalDatacenter(@NonNull String profileName) {
     return localDatacentersFromBuilder.get(profileName);
   }
 
